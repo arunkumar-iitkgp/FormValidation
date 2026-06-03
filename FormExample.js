@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import Checkbox from 'expo-checkbox';
 
 // Define validation schema using Yup
 const validationSchema = Yup.object({
@@ -20,9 +21,13 @@ const validationSchema = Yup.object({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password'), null], 'Passwords must match')
     .required('Confirm Password is required'),
+  address: Yup.string()
+    .min(10, 'Address must be at least 10 characters')
+    .required('Address is required'),
+  termsAccepted: Yup.boolean()
+    .oneOf([true], 'You must accept the terms and conditions')
+    .required('You must accept the terms and conditions'),
 });
-
-
 
 const FormExample = () => {
   return (
@@ -35,13 +40,15 @@ const FormExample = () => {
       phone: '',
       password: '',
       confirmPassword: '',
+      address: '',
+      termsAccepted: false,
     }}
      validationSchema={validationSchema}
         onSubmit={(values) => {
           console.log(values);
         }}
     >
-      {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+      {({ handleChange, handleBlur, handleSubmit, setFieldValue, values, errors, touched }) => (
         <ScrollView contentContainerStyle={styles.container}>
           <View testID='formName'>
             <Text style={styles.label}>Name</Text>
@@ -105,7 +112,32 @@ const FormExample = () => {
               {touched.confirmPassword && errors.confirmPassword && (
                 <Text style={styles.error}>{errors.confirmPassword}</Text>
               )}
-            </View>
+          </View>
+          <View testID='formAddress'>
+            <Text style={styles.label}>Address</Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={handleChange('address')}
+              onBlur={handleBlur('address')}
+              value={values.address}
+            />
+            {touched.address && errors.address && (
+              <Text style={styles.error}>{errors.address}</Text>
+            )}
+          </View>
+          <View testID="formTerms">
+  <View style={styles.checkboxContainer}>
+    <Checkbox
+      value={values.termsAccepted}
+      onValueChange={(nextValue) => setFieldValue('termsAccepted', nextValue)}
+      onBlur={handleBlur('termsAccepted')}
+    />
+    <Text>I accept the terms and conditions</Text>
+  </View>
+  {touched.termsAccepted && errors.termsAccepted && (
+    <Text style={styles.errorText}>{errors.termsAccepted}</Text>
+  )}
+</View>
           <Button onPress={handleSubmit} title="Submit" color="#007BFF" />
         </ScrollView>
       )}
@@ -144,9 +176,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#fff',
   },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  checkbox: {
+    marginRight: 10,
+  },
   error: {
     color: '#d9534f',
     fontSize: 14,
+    marginBottom: 10,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
     marginBottom: 10,
   },
 });
